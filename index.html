@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProdPicStudio</title>
+    <link rel="icon" type="image/x-icon" href="./images/icon.svg">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src=" ./js/script.js " defer></script>
+</head>
+
+<body data-theme="dark">
+    <div class="app-container">
+        <nav class="topbar" id="topbar">
+            <span class="topbar-brand">ProdPicStudio</span>
+
+            <div class="topbar-menu" id="menuImport">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuImport')">导入</button>
+                <div class="topbar-dropdown" id="dropdownImport">
+                    <button class="topbar-dropdown-item" onclick="importProject();closeAllDropdowns();">导入 工程文件</button>
+                    <button class="topbar-dropdown-item" onclick="importTempTemplate();closeAllDropdowns();">导入
+                        临时模板</button>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuExport">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuExport')">导出</button>
+                <div class="topbar-dropdown" id="dropdownExport">
+                    <button class="topbar-dropdown-item" onclick="exportProject();closeAllDropdowns();">导出为
+                        工程文件</button>
+                    <button class="topbar-dropdown-item" onclick="exportAsTemplate();closeAllDropdowns();">导出为
+                        模板文件</button>
+                    <button class="topbar-dropdown-item" onclick="exportImage('png');closeAllDropdowns();">导出为
+                        PNG</button>
+                    <button class="topbar-dropdown-item" onclick="exportImage('jpg');closeAllDropdowns();">导出为
+                        JPG</button>
+                    <button class="topbar-dropdown-item" onclick="copyToClipboard();closeAllDropdowns();">导出到
+                        剪切板</button>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuTemplate">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuTemplate')">模板</button>
+                <div class="topbar-dropdown" id="dropdownTemplate">
+                    <span class="topbar-dropdown-sub-label" id="templateBuiltinLabel">内置模板</span>
+                    <div id="templatePresetList"></div>
+                    <div class="topbar-dropdown-separator" id="templateBuiltinSeparator"></div>
+                    <button class="topbar-dropdown-item" onclick="addCustomTemplate();closeAllDropdowns();">添加为
+                        自定义模板</button>
+                    <button class="topbar-dropdown-item" onclick="importTemplateFile();closeAllDropdowns();">导入
+                        自定义模板</button>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuArchive">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuArchive')">存档</button>
+                <div class="topbar-dropdown" id="dropdownArchive">
+                    <span class="topbar-dropdown-sub-label">临时工程存档</span>
+                    <div id="archiveSlotList"></div>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuEdit">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuEdit')">编辑</button>
+                <div class="topbar-dropdown" id="dropdownEdit">
+                    <button class="topbar-dropdown-item" onclick="resetAll();closeAllDropdowns();">删除 所有图层</button>
+                    <button class="topbar-dropdown-item" onclick="editPresetBgList();closeAllDropdowns();">编辑
+                        预设背景列表</button>
+                    <button class="topbar-dropdown-item" onclick="editFontList();closeAllDropdowns();">编辑 字体列表</button>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuSettings">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuSettings')">设置</button>
+                <div class="topbar-dropdown" id="dropdownSettings">
+                    <button class="topbar-dropdown-item" id="settingsSidebarToggleBtn"
+                        onclick="toggleSidebarFromMenu();">折叠侧边栏</button>
+                    <button class="topbar-dropdown-item" id="settingsDarkModeBtn" onclick="toggleDarkModeFromMenu();">
+                        深色模式 <span class="check-mark" id="settingsDarkModeCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsPersistenceBtn" onclick="togglePersistence();">
+                        持久化保存 <span class="check-mark" id="settingsPersistenceCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsOutOfBoundsBtn"
+                        onclick="toggleAllowOutOfBounds();">
+                        允许图层内容出界 <span class="check-mark" id="settingsOutOfBoundsCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsFreeSelectBtn" onclick="toggleAlwaysFreeSelect();">
+                        始终启用自由选中 <span class="check-mark" id="settingsFreeSelectCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsShowBuiltinTemplatesBtn"
+                        onclick="toggleShowBuiltinTemplates();">
+                        展示内置模板 <span class="check-mark" id="settingsShowBuiltinTemplatesCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsShowBuiltinFontsBtn"
+                        onclick="toggleShowBuiltinFonts();">
+                        展示预设字体 <span class="check-mark" id="settingsShowBuiltinFontsCheck">&#x2713;</span></button>
+                    <button class="topbar-dropdown-item" id="settingsResizeHandlesBtn" onclick="toggleResizeHandles();">
+                        边界缩放控制 <span class="check-mark" id="settingsResizeHandlesCheck">&#x2713;</span></button>
+                    <div class="topbar-dropdown-separator"></div>
+                    <button class="topbar-dropdown-item" onclick="resetAllSettings();closeAllDropdowns();">
+                        重置所有设置</button>
+                    <button class="topbar-dropdown-item" onclick="exportConfigFile();closeAllDropdowns();">
+                        导出配置文件</button>
+                    <button class="topbar-dropdown-item" onclick="importConfigFile();closeAllDropdowns();">
+                        导入配置文件</button>
+                </div>
+            </div>
+
+            <div class="topbar-menu" id="menuHelp">
+                <button class="topbar-menu-btn" onclick="toggleDropdown('menuHelp')">帮助</button>
+                <div class="topbar-dropdown" id="dropdownHelp">
+                    <button class="topbar-dropdown-item"
+                        onclick="showTutorialModal();closeAllDropdowns();">快捷键指南</button>
+                    <button class="topbar-dropdown-item" onclick="showFaqModal();closeAllDropdowns();">常见问题</button>
+                    <button class="topbar-dropdown-item" onclick="showAboutModal();closeAllDropdowns();">关于</button>
+                </div>
+            </div>
+
+            <div class="topbar-spacer"></div>
+        </nav>
+
+        <div class="main-content">
+            <aside class="sidebar" id="sidebar">
+                <button class="sidebar-expand-btn" id="sidebarExpandBtn" onclick="toggleSidebar()"
+                    title="展开侧边栏">▶</button>
+                <div class="sidebar-scroll" id="sidebarScroll">
+                    <div class="section open" id="sectionCanvas">
+                        <div class="section-header" onclick="toggleSection('sectionCanvas')">画布规格 <span
+                                class="arrow">&#x25BE;</span></div>
+                        <div class="section-body">
+                            <div class="row">
+                                <div>
+                                    <label>比例</label>
+                                    <select id="canvasRatio" onchange="onCanvasRatioChange()">
+                                        <option value="1:1">正 1:1</option>
+                                        <option value="3:4">竖 3:4</option>
+                                        <option value="4:3">横 4:3</option>
+                                        <option value="9:16">竖 9:16</option>
+                                        <option value="16:9" selected>横 16:9</option>
+                                        <option value="1:2">竖 1:2</option>
+                                        <option value="2:1">横 2:1</option>
+                                        <option value="21:9">横 21:9</option>
+                                        <option value="9:21">竖 9:21</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>清晰度</label>
+                                    <select id="quality" onchange="onQualityChange()">
+                                        <option value="sd">标清 720P</option>
+                                        <option value="hd" selected>高清 1080P</option>
+                                        <option value="fhd">超清 2K</option>
+                                        <option value="4k">极清 4K</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="resolution-note">
+                                实际像素: <span id="actualResolution">1920x1080</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section open" id="sectionBg">
+                        <div class="section-header" onclick="toggleSection('sectionBg')">背景设置 <span
+                                class="arrow">&#x25BE;</span></div>
+                        <div class="section-body">
+                            <div>
+                                <label>背景类型</label>
+                                <select id="bgType" onchange="onBgTypeChange()">
+                                    <option value="solid">纯色</option>
+                                    <option value="gradient">渐变</option>
+                                </select>
+                            </div>
+                            <div id="bgSolidGroup">
+                                <label>背景颜色</label>
+                                <input type="color" id="bgColor" value="#1a1a2e" onchange="scheduleRender()">
+                            </div>
+                            <div id="bgGradientGroup">
+                                <div class="color-pair">
+                                    <input type="color" id="bgGradColor1" value="#4f6ef7" onchange="scheduleRender()">
+                                    <span>—></span>
+                                    <input type="color" id="bgGradColor2" value="#a855f7" onchange="scheduleRender()">
+                                </div>
+                                <label class="field-label-with-gap">渐变方向</label>
+                                <select id="bgGradDirection" onchange="scheduleRender()">
+                                    <option value="top-bottom">从上到下</option>
+                                    <option value="bottom-top">从下到上</option>
+                                    <option value="left-right">从左到右</option>
+                                    <option value="right-left">从右到左</option>
+                                    <option value="tl-br">左上-右下</option>
+                                    <option value="tr-bl">右上-左下</option>
+                                    <option value="radial">径向(中心发散)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>预设背景</label>
+                                <div class="btn-group preset-bg-group" id="presetBgContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section open" id="sectionLayers">
+                        <div class="section-header" onclick="toggleSection('sectionLayers')">图层管理 <span
+                                class="arrow">&#x25BE;</span></div>
+                        <div class="section-body">
+                            <ul class="layer-list" id="layerList"></ul>
+                            <div class="btn-group layer-action-group">
+                                <button class="btn btn-sm btn-accent" onclick="addTextLayer()">+ 添加文字</button>
+                                <button class="btn btn-sm btn-outline" onclick="addImageLayer()">+ 添加图片</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section open" id="sectionProps">
+                        <div class="section-header" onclick="toggleSection('sectionProps')">图层属性 <span
+                                class="arrow">&#x25BE;</span></div>
+                        <div class="section-body" id="propsBody">
+                            <p class="empty-state empty-state--small">
+                                请选择一个图层进行编辑
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="section open" id="sectionWatermark">
+                        <div class="section-header" onclick="toggleSection('sectionWatermark')">水印设置 <span
+                                class="arrow">&#x25BE;</span></div>
+                        <div class="section-body">
+                            <div class="property-check-row">
+                                <label><input type="checkbox" id="watermarkEnabled"
+                                        onchange="onWatermarkEnabledChange()"> 启用水印</label>
+                            </div>
+                            <div id="watermarkSettingsGroup">
+                                <div>
+                                    <label>水印文字</label>
+                                    <input type="text" id="watermarkText" value="Watermark"
+                                        onchange="onWatermarkChange()" placeholder="输入水印文字">
+                                </div>
+                                <div class="row">
+                                    <div>
+                                        <label>文字颜色</label>
+                                        <input type="color" id="watermarkColor" value="#ffffff"
+                                            onchange="onWatermarkChange()">
+                                    </div>
+                                    <div>
+                                        <label>不透明度</label>
+                                        <div class="font-size-control">
+                                            <input type="number" id="watermarkOpacityNum" value="30" min="5" max="100"
+                                                onchange="onWatermarkChange(this)" oninput="onWatermarkChange(this)">
+                                            <input type="range" id="watermarkOpacityRange" value="30" min="5" max="100"
+                                                oninput="onWatermarkChange(this)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div>
+                                        <label>字号(px)</label>
+                                        <div class="font-size-control">
+                                            <input type="number" id="watermarkFontSizeNum" value="36" min="10" max="200"
+                                                onchange="onWatermarkChange(this)" oninput="onWatermarkChange(this)">
+                                            <input type="range" id="watermarkFontSizeRange" value="36" min="10"
+                                                max="200" oninput="onWatermarkChange(this)">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>旋转角度</label>
+                                        <div class="font-size-control">
+                                            <input type="number" id="watermarkRotationNum" value="-30" min="-180"
+                                                max="180" onchange="onWatermarkChange(this)"
+                                                oninput="onWatermarkChange(this)">
+                                            <input type="range" id="watermarkRotationRange" value="-30" min="-180"
+                                                max="180" oninput="onWatermarkChange(this)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div>
+                                        <label>字体</label>
+                                        <select id="watermarkFontFamily" onchange="onWatermarkChange()"></select>
+                                    </div>
+                                    <div>
+                                        <label>位置</label>
+                                        <select id="watermarkPosition" onchange="onWatermarkChange()">
+                                            <option value="center">居中</option>
+                                            <option value="tile" selected>平铺</option>
+                                            <option value="top-left">左上</option>
+                                            <option value="top-right">右上</option>
+                                            <option value="bottom-left">左下</option>
+                                            <option value="bottom-right">右下</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="watermarkTileSettings">
+                                    <div class="row">
+                                        <div>
+                                            <label>水平间距(%)</label>
+                                            <input type="number" id="watermarkGapX" value="35" min="10" max="80"
+                                                onchange="onWatermarkChange()">
+                                        </div>
+                                        <div>
+                                            <label>垂直间距(%)</label>
+                                            <input type="number" id="watermarkGapY" value="30" min="10" max="80"
+                                                onchange="onWatermarkChange()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="preview-area" id="previewArea">
+                <div class="preview-wrapper" id="previewWrapper">
+                    <canvas id="mainCanvas"></canvas>
+                    <div class="preview-hint preview-hint--hidden" id="previewHint">拖拽可移动选中图层 - 滚轮缩放预览</div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="welcomeModalOverlay">
+        <div class="modal-dialog modal-dialog--centered">
+            <h3>温馨提示</h3>
+            <div class="welcome-modal-body">
+                <ul class="welcome-list">
+                    <li>此为纯前端页面，不会上传至服务器，请放心使用</li>
+                    <li>可前往 [帮助->快捷键指南] 查看快捷键</li>
+                </ul>
+            </div>
+            <div class="checkbox-row checkbox-row--center">
+                <input type="checkbox" id="welcomeDontShowAgain">
+                <label for="welcomeDontShowAgain" class="checkbox-label-inline">7天内不再提醒此消息</label>
+            </div>
+            <button class="btn-close-modal" onclick="closeWelcomeModal()">确定</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tutorialModalOverlay">
+        <div class="modal-dialog">
+            <h3>快捷键指南</h3>
+            <div class="welcome-content">
+                <li>Shift+方向键 微调位置</li>
+                <li>Ctrl+D 复制图层</li>
+                <li>Delete或backspace 删除图层</li>
+                <li>Ctrl+滚轮 缩放预览</li>
+                <li>Ctrl+S 保存工程文件</li>
+                <li>Ctrl+C 复制图像到剪切板</li>
+                <li>鼠标中间 选中当前图层</li>
+            </div>
+            <button class="btn-close-modal" onclick="closeTutorialModal()">确定</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="aboutModalOverlay">
+        <div class="modal-dialog modal-dialog--centered">
+            <h3>关于</h3>
+            <div class="about-info">
+                <p>ProdPicStudio - v1</p>
+                <a href="https://github.com/pipicat613/ProdPicStudio">Github</a>
+                <p class="about-subtitle">Made by pipicat613</p>
+            </div>
+            <button class="btn-close-modal" onclick="closeAboutModal()">确定</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="faqModalOverlay">
+        <div class="modal-dialog modal-dialog--wide">
+            <h3>常见问题</h3>
+            <div class="faq-content">
+                <div class="faq-item">
+                    <div class="faq-q">Q: 如何保存我的工作进度？</div>
+                    <div class="faq-a">A: 在设置中开启[持久化保存]后，所有操作会自动保存到浏览器本地存储。也可以使用[Ctrl+S]手动保存，或通过[导出—>导出为工程文件]保存为JSON文件。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Q: 字体更改没有生效怎么办？</div>
+                    <div class="faq-a">A: 字体功能依赖本地按照的字体库，需要先自行按照字体。</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Q: 数据会上传到服务器吗？</div>
+                    <div class="faq-a">A: 不会，本工具是纯前端应用，所有数据仅保存在您的浏览器本地存储中，不会上传到任何服务器。</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Q: 工程文件 和 模板文件 有什么区别吗？</div>
+                    <div class="faq-a">A: 工程文件会改变画布比例和清晰度，模板文件不会</div>
+                </div>
+            </div>
+            <button class="btn-close-modal" onclick="closeFaqModal()">关闭</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="presetBgModalOverlay">
+        <div class="modal-dialog">
+            <h3>编辑预设背景列表</h3>
+            <ul class="preset-edit-list" id="presetBgEditList"></ul>
+            <div class="btn-group preset-modal-actions">
+                <button class="btn btn-sm btn-outline" onclick="addPresetBg()">+ 添加背景预设</button>
+            </div>
+            <button class="btn-close-modal" onclick="closePresetBgModal()">完成</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="customTemplateModalOverlay">
+        <div class="modal-dialog">
+            <h3>添加为自定义模板</h3>
+            <div>
+                <label>模板名称</label>
+                <input type="text" id="customTemplateName" placeholder="输入模板名称" value="">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-accent btn-sm" onclick="saveCustomTemplate()">保存模板</button>
+                <button class="btn btn-outline btn-sm" onclick="closeCustomTemplateModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addPresetBgModalOverlay">
+        <div class="modal-dialog">
+            <h3>添加背景预设</h3>
+            <div>
+                <label>背景类型</label>
+                <select id="addPresetBgType" onchange="onAddPresetBgTypeChange()">
+                    <option value="solid">纯色</option>
+                    <option value="gradient">渐变</option>
+                </select>
+            </div>
+            <div id="addPresetBgSolidGroup">
+                <label>颜色</label>
+                <input type="color" id="addPresetBgSolidColor" value="#4f6ef7">
+            </div>
+            <div id="addPresetBgGradientGroup" style="display:none;">
+                <label>渐变颜色</label>
+                <div class="color-pair">
+                    <input type="color" id="addPresetBgGradColor1" value="#4f6ef7">
+                    <span>→</span>
+                    <input type="color" id="addPresetBgGradColor2" value="#a855f7">
+                </div>
+            </div>
+            <div>
+                <label>预设名称</label>
+                <input type="text" id="addPresetBgLabel" placeholder="输入预设名称" value="">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-accent btn-sm" onclick="saveAddPresetBg()">添加</button>
+                <button class="btn btn-outline btn-sm" onclick="closeAddPresetBgModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fontListModalOverlay">
+        <div class="modal-dialog">
+            <h3>编辑字体列表</h3>
+            <ul class="preset-edit-list" id="fontEditList"></ul>
+            <div class="btn-group preset-modal-actions">
+                <button class="btn btn-sm btn-outline" onclick="openAddFontModal()">+ 添加字体</button>
+            </div>
+            <button class="btn-close-modal" onclick="closeFontListModal()">完成</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addFontModalOverlay">
+        <div class="modal-dialog">
+            <h3>添加字体</h3>
+            <div>
+                <label>显示名称</label>
+                <input type="text" id="addFontLabel" placeholder="如: 微软雅黑" value="">
+            </div>
+            <div>
+                <label>CSS font-family 值</label>
+                <input type="text" id="addFontValue" placeholder="如: Microsoft YaHei, sans-serif" value="">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-accent btn-sm" onclick="saveAddFont()">添加</button>
+                <button class="btn btn-outline btn-sm" onclick="closeAddFontModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModalOverlay">
+        <div class="modal-dialog modal-dialog--centered">
+            <h3 id="confirmModalTitle">确认操作</h3>
+            <p class="confirm-message" id="confirmModalMessage">确定要继续吗？</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline btn-sm" id="confirmModalCancelBtn" type="button">取消</button>
+                <button class="btn btn-accent btn-sm" id="confirmModalConfirmBtn" type="button">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <input type="file" id="imageFileInput" class="hidden-input" accept="image/*" onchange="handleImageUpload(event)">
+    <input type="file" id="projectFileInput" class="hidden-input" accept=".json" onchange="handleProjectImport(event)">
+    <input type="file" id="templateFileInput" class="hidden-input" accept=".json"
+        onchange="handleTemplateImport(event)">
+    <input type="file" id="tempTemplateFileInput" class="hidden-input" accept=".json"
+        onchange="handleTempTemplateImport(event)">
+    <input type="file" id="configFileInput" class="hidden-input" accept=".json" onchange="handleConfigImport(event)">
+
+
+</body>
+
+</html>
