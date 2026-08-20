@@ -1,15 +1,15 @@
 # ProdPicStudio
 
 <h1 align="center">
-  <img src="./images/icon.svg" alt="ProdPicStudio" width="128" />
+  <img src="../images/icon.svg" alt="ProdPicStudio" width="128" />
 </h1>
 
 > A lightweight, pure front-end image design tool with zero dependencies. Ideal for e-commerce main product images and social media covers.
 
 <p align="center">
   Languages:
-  <a href="./README.md">简体中文</a> ·
-  <a href="./docs/README_en.md">English</a> ·
+  <a href="../README.md">简体中文</a> ·
+  <a href="../docs/README_en.md">English</a> ·
 </p>
 
 ## Features
